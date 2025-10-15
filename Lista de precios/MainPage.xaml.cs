@@ -66,8 +66,6 @@ namespace Lista_de_precios
                         // Tomar la primera hoja
                         excelDataTable = result.Tables[0];
 
-                        // Mostrar los datos en pantalla
-                        DisplayExcelData();
                     }
                 }
             }
@@ -77,39 +75,6 @@ namespace Lista_de_precios
             }
         }//fin de load excel
 
-        private void DisplayExcelData()
-        {
-            // Crear un CollectionView para mostrar los datos
-            var collectionView = new CollectionView
-            {
-                ItemsSource = excelDataTable.DefaultView,
-                ItemTemplate = new DataTemplate(() =>
-                {
-                    var grid = new Grid();
-
-                    // Crear una etiqueta para cada celda en la fila
-                    var label = new Label
-                    {
-                        Margin = new Thickness(5),
-                        FontSize = 14,
-                        LineBreakMode = LineBreakMode.WordWrap
-                    };
-
-                    // Vincular el texto de la etiqueta a los datos de la fila
-                    label.SetBinding(Label.TextProperty, new Binding(".[0]")); // Muestra la primera columna
-
-                    grid.Children.Add(label);
-                    return grid;
-                })
-            };
-
-            // Limpiar el grid y agregar el CollectionView
-
-            MainGrid.Children.Clear();
-            Grid.SetRow(collectionView, 3); // Fila 3 para mostrar los datos
-            Grid.SetColumnSpan(collectionView, 2);
-            MainGrid.Children.Add(collectionView);
-        }
 
 
 
@@ -148,6 +113,95 @@ namespace Lista_de_precios
             }
         }// fin del metodo OnRecordButtonClicked
 
+        /*
+        private void BusquedaClicked (object sender, EventArgs e)
+        {
+            BuscarEnExcel(Busqueda.Text, true, "2");
+            MostrarResultadosBusqueda(excelDataTable);
+        }
+
+
+        public DataTable BuscarEnExcel(string textoBusqueda, bool buscarEnTodasLasColumnas = true, string columnaEspecifica = "")
+        {
+            if (excelDataTable == null || string.IsNullOrWhiteSpace(textoBusqueda))
+            {
+                return excelDataTable?.Clone() ?? new DataTable();
+            }
+
+            try
+            {
+                // Crear filtro para DataTable
+                string filtro = CrearFiltroBusqueda(textoBusqueda, buscarEnTodasLasColumnas, columnaEspecifica);
+
+                // Aplicar filtro
+                DataRow[] filasFiltradas = excelDataTable.Select(filtro);
+
+                // Convertir resultado a DataTable
+                return FilasToDataTable(filasFiltradas);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en búsqueda: {ex.Message}");
+                return excelDataTable?.Clone() ?? new DataTable();
+            }
+        }//BuscarEnExcel
+
+        private string CrearFiltroBusqueda(string texto, bool todasLasColumnas, string columnaEspecifica)
+        {
+            if (todasLasColumnas)
+            {
+                // Buscar en todas las columnas
+                var filtros = new List<string>();
+                foreach (DataColumn columna in excelDataTable.Columns)
+                {
+                    if (columna.DataType == typeof(string))
+                    {
+                        filtros.Add($"[{columna.ColumnName}] LIKE '%{EscapeLikeValue(texto)}%'");
+                    }
+                }
+                return string.Join(" OR ", filtros);
+            }
+            else if (!string.IsNullOrEmpty(columnaEspecifica))
+            {
+                // Buscar en columna específica
+                return $"[{columnaEspecifica}] LIKE '%{EscapeLikeValue(texto)}%'";
+            }
+
+            return "";
+        }//CrearFiltroBusqueda
+
+        private string EscapeLikeValue(string value)
+        {
+            // Escapar caracteres especiales para LIKE
+            return value.Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]");
+        }//EscapeLikeValue
+
+        private DataTable FilasToDataTable(DataRow[] filas)
+        {
+            if (filas == null || filas.Length == 0)
+                return excelDataTable?.Clone() ?? new DataTable();
+
+            DataTable tablaResultado = excelDataTable.Clone();
+            foreach (DataRow fila in filas)
+            {
+                tablaResultado.ImportRow(fila);
+            }
+            return tablaResultado;
+        }//FilasToDataTable
+
+        private async void MostrarResultadosBusqueda(DataTable resultados)
+        {
+            if (resultados.Rows.Count == 0)
+            {
+                await DisplayAlert("Búsqueda", "No se encontraron resultados", "OK");
+                return;
+            }
+
+            // Aquí puedes actualizar tu DataGridView, ListView, o cualquier control
+            // con los resultados filtrados
+
+            await DisplayAlert("Búsqueda", $"Se encontraron {resultados.Rows.Count} resultados", "OK");
+        }//MostrarResultadosBusqueda*/
 
     }//fin de la clase
 }//fin del namespace

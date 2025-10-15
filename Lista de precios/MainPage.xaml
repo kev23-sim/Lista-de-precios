@@ -9,6 +9,8 @@
             <RowDefinition Height="30"></RowDefinition>
             <RowDefinition Height="50"></RowDefinition>
             <RowDefinition Height="150"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -21,10 +23,13 @@
         <Entry x:Name="Busqueda" Grid.Row="2" Grid.Column="0" HeightRequest="80" Text="Ingresa el nombre del producto" Opacity="0.5" Margin="0,60,0,10" FontSize="18" VerticalOptions="Center"></Entry>
         <Button x:Name="BusquedaVoz" Grid.Row="2" Grid.Column="1" HeightRequest="50" Text="v" Margin="0,60,0,10" VerticalOptions="Center" Clicked="OnRecordButtonClicked"></Button>
         <Button x:Name="EscanearCodigoBarras" Grid.Row="3" Grid.ColumnSpan="2" HeightRequest="30" Text="Escanear" Margin="0,10,0,10" HorizontalOptions="Center" Background="Red"></Button>
+        <CollectionView x:Name="tablaExcel" Grid.Row="4" ItemsLayout="verticalList">
+            
+        </CollectionView>
 
         <Grid x:Name="MainGrid">
-
         </Grid>
+
 
 
     </Grid>
