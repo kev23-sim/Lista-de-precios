@@ -13,9 +13,19 @@ namespace Lista_de_precios
         public MainPage()
         {
             InitializeComponent();
+            Busqueda.Focused += OnBusquedaFocused;
             audioRecorder = new AudioRecorderService();
         }//fin del constructor
 
+
+        private void OnBusquedaFocused(object sender, FocusEventArgs e)
+        {
+            if (Busqueda.Text == "Ingresa el nombre del producto")
+            {
+                Busqueda.Text = "";
+                Busqueda.Opacity = 1.0; // Cambiar opacidad a normal
+            }
+        }//fin del OnBusquedaFocused
         private async void CargarExcelClicked(object sender, EventArgs e)
         {
             try
@@ -65,9 +75,8 @@ namespace Lista_de_precios
 
                         // Tomar la primera hoja
                         excelDataTable = result.Tables[0];
+                        await DisplayAlert("Aviso", $"Excel cargado correctamente:","OK");
 
-                        // Mostrar los datos en pantalla
-                        DisplayExcelData();
                     }
                 }
             }
@@ -76,40 +85,6 @@ namespace Lista_de_precios
                 await DisplayAlert("Error", $"Error al leer el archivo: {ex.Message}", "OK");
             }
         }//fin de load excel
-
-        private void DisplayExcelData()
-        {
-            // Crear un CollectionView para mostrar los datos
-            var collectionView = new CollectionView
-            {
-                ItemsSource = excelDataTable.DefaultView,
-                ItemTemplate = new DataTemplate(() =>
-                {
-                    var grid = new Grid();
-
-                    // Crear una etiqueta para cada celda en la fila
-                    var label = new Label
-                    {
-                        Margin = new Thickness(5),
-                        FontSize = 14,
-                        LineBreakMode = LineBreakMode.WordWrap
-                    };
-
-                    // Vincular el texto de la etiqueta a los datos de la fila
-                    label.SetBinding(Label.TextProperty, new Binding(".[0]")); // Muestra la primera columna
-
-                    grid.Children.Add(label);
-                    return grid;
-                })
-            };
-
-            // Limpiar el grid y agregar el CollectionView
-
-            MainGrid.Children.Clear();
-            Grid.SetRow(collectionView, 3); // Fila 3 para mostrar los datos
-            Grid.SetColumnSpan(collectionView, 2);
-            MainGrid.Children.Add(collectionView);
-        }
 
 
 
@@ -147,6 +122,108 @@ namespace Lista_de_precios
                 }
             }
         }// fin del metodo OnRecordButtonClicked
+
+
+        private void EscanearCodigoBarras_clicked (object sender, EventArgs e)
+        {
+            string buscar = Busqueda.Text;
+            BuscarProducto(buscar);
+        }//fin del EscanearCodigoBarras_clicked
+        private void BuscarProducto(string textoBusqueda)
+        {
+
+            if (excelDataTable == null || excelDataTable.Rows.Count == 0)
+            {
+                DisplayAlert("Error", "No hay datos cargados del Excel", "OK");
+                return;
+            }
+
+            try
+            {
+                // Usar índice numérico en lugar de nombre (columna 1 = "DETALLE")
+                var resultados = excelDataTable.AsEnumerable()
+                    .Where(row =>
+                    {
+                        var valor = row.Field<string>(1); // Índice 1 para la segunda columna
+                        return valor?.IndexOf(textoBusqueda, StringComparison.OrdinalIgnoreCase) >= 0;
+                    })
+                    .ToList();
+
+                if (resultados.Count == 0)
+                {
+                    DisplayAlert("Búsqueda", "No se encontraron productos con ese nombre", "OK");
+                    return;
+                }
+
+                // Mostrar los resultados filtrados
+                MostrarResultadosBusqueda(resultados);
+            }
+            catch (Exception ex)
+            {
+                DisplayAlert("Error", $"Error al buscar: {ex.Message}", "OK");
+            }
+        }//fin del metodo BuscarProducto
+
+
+        private void MostrarResultadosBusqueda(List<DataRow> resultados)
+        {
+            // Configurar el CollectionView que ya existe en el XAML
+            ResultadosCollectionView.ItemsSource = resultados;
+            ResultadosCollectionView.ItemTemplate = new DataTemplate(() =>
+            {
+                var grid = new Grid();
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                // Referencia
+                var lblReferencia = new Label
+                {
+                    Margin = new Thickness(5),
+                    FontSize = 12,
+                    FontAttributes = FontAttributes.Bold,
+                    WidthRequest = 80
+                };
+                lblReferencia.SetBinding(Label.TextProperty, new Binding("[0]")); // Columna REFERENCIA
+
+                // Detalle
+                var lblDetalle = new Label
+                {
+                    Margin = new Thickness(5),
+                    FontSize = 14,
+                    LineBreakMode = LineBreakMode.WordWrap
+                };
+                lblDetalle.SetBinding(Label.TextProperty, new Binding("[1]")); // Columna DETALLE
+
+                // Valor
+                var lblValor = new Label
+                {
+                    Margin = new Thickness(5),
+                    FontSize = 14,
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = Colors.Green,
+                    WidthRequest = 80,
+                    HorizontalTextAlignment = TextAlignment.End
+                };
+                lblValor.SetBinding(Label.TextProperty, new Binding("[2]")); // Columna VALOR POS
+
+                // Agregar controles al grid
+                Grid.SetColumn(lblReferencia, 0);
+                Grid.SetColumn(lblDetalle, 1);
+                Grid.SetColumn(lblValor, 2);
+
+                grid.Children.Add(lblReferencia);
+                grid.Children.Add(lblDetalle);
+                grid.Children.Add(lblValor);
+
+                return grid;
+            });
+
+            // Hacer visible el CollectionView
+            ResultadosCollectionView.IsVisible = true;
+
+        }//fin del MostrarResultadosBusqueda
+
 
 
     }//fin de la clase
