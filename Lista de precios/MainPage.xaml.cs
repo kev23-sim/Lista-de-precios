@@ -1,6 +1,7 @@
 ﻿using ExcelDataReader;
 using System.Data;
 using Microsoft.Maui.ApplicationModel;
+using ZXing.Net.Maui.Controls;
 
 namespace Lista_de_precios
 {
@@ -124,7 +125,7 @@ namespace Lista_de_precios
         }// fin del metodo OnRecordButtonClicked
 
 
-        private void EscanearCodigoBarras_clicked (object sender, EventArgs e)
+        private void BuscarProducto_clicked(object sender, EventArgs e)
         {
             string buscar = Busqueda.Text;
             BuscarProducto(buscar);
@@ -223,7 +224,6 @@ namespace Lista_de_precios
             ResultadosCollectionView.IsVisible = true;
 
         }//fin del MostrarResultadosBusqueda
-
 
 
     }//fin de la clase
